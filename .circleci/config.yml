@@ -1,0 +1,47 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Grab cert
+          command: scp -o StrictHostKeyChecking=no $DROPLET_USER@$DROPLET_HOST:/etc/letsencrypt/live/coffeechamp.dev/server.p12 ./src/main/resources/key/
+      - run:
+          name: Build docker image on local
+          command: mvn compile com.google.cloud.tools:jib-maven-plugin:1.4.0:dockerBuild
+      - run:
+          name: Push docker image
+          command: |
+            docker login --username $HUB_USERNAME --password $HUB_PASSWORD &&
+            docker tag coffee-champ-service:0.0.1-SNAPSHOT smort/coffee-champ-service:latest &&
+            docker tag smort/coffee-champ-service:latest smort/coffee-champ-service:$CIRCLE_BUILD_NUM &&
+            docker push smort/coffee-champ-service
+  deploy:
+    machine:
+      enabled: true
+    steps:
+      - checkout
+      - run:
+          name: Deploy Server
+          command: |
+            ssh -v $DROPLET_USER@$DROPLET_HOST "docker stop coffee-champ-service && docker rm coffee-champ-service && docker rmi -f smort/coffee-champ-service && docker login --username $HUB_USERNAME --password $HUB_PASSWORD && docker pull smort/coffee-champ-service:latest && docker run -e certPassword=$CERT_PASSWORD  -p 8443:8443 --name coffee-champ-service -d smort/coffee-champ-service:latest"
+
+workflows:
+  version: 2
+  build_deploy:
+    jobs:
+      - build:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
