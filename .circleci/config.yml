@@ -27,15 +27,13 @@ jobs:
       - run:
           name: Deploy Server
           command: |
-            ssh -v $DROPLET_USER@$DROPLET_HOST "docker stop coffee-champ-service && docker rm coffee-champ-service && docker rmi -f smort/coffee-champ-service && docker login --username $HUB_USERNAME --password $HUB_PASSWORD && docker pull smort/coffee-champ-service:latest && docker run -e certPassword=$CERT_PASSWORD  -p 8443:8443 --name coffee-champ-service -d smort/coffee-champ-service:latest"
+            ssh -v $DROPLET_USER@$DROPLET_HOST "docker login --username $HUB_USERNAME --password $HUB_PASSWORD && docker pull smort/coffee-champ-service:latest && docker run -e certPassword=$CERT_PASSWORD  -p 8443:8443 --name coffee-champ-service -d smort/coffee-champ-service:latest"
 
 workflows:
   version: 2
   build_deploy:
     jobs:
       - build:
-          requires:
-            - test
           filters:
             branches:
               only: master
