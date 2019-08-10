@@ -1,5 +1,6 @@
-package com.smort.coffeechampservice.recommendation;
+package com.smort.coffeechampservice.controllers;
 
+import com.smort.coffeechampservice.models.Preference;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -7,14 +8,9 @@ import java.util.Map;
 
 @RestController
 public class RecommendationController {
-    @RequestMapping("/hello")
-    public String sayHello(@RequestParam(value = "name") String name){
-        return "Hello " + name;
-    }
-
     @PostMapping("/recommendation")
-    public String getRecommendation(@RequestBody Map<String, ArrayList> body){
-        ArrayList preferences = body.get("preferences");
+    public String getRecommendation(@RequestBody Preference body){
+        ArrayList preferences = body.getPreferences();
         String recommendation;
 
         if(preferences.contains("dark")){
