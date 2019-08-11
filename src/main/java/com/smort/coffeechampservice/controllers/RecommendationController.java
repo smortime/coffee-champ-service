@@ -4,10 +4,11 @@ import com.smort.coffeechampservice.models.Preference;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 @RestController
 public class RecommendationController {
+
+    @CrossOrigin
     @PostMapping("/recommendation")
     public String getRecommendation(@RequestBody Preference body){
         ArrayList preferences = body.getPreferences();
